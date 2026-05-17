@@ -2,7 +2,7 @@ from flask import Flask, session, request, redirect, url_for
 from db_scripts import get_question_after, get_quises
  
 def start_quis(quiz_id):
-    '''создаёт нужные значения в словаре session'''
+    # создаёт нужные значения в словаре session
     session['quiz'] = quiz_id
     session['last_question'] = 0
  
@@ -10,7 +10,7 @@ def end_quiz():
     session.clear()
  
 def quiz_form():
-    ''' функция получает список викторин из базы и формирует форму с выпадающим списком'''
+    # функция получает список викторин из базы и формирует форму с выпадающим списком
     html_beg = '''<html><body><h2>Выберите викторину:</h2><form method="post" action="index"><select name="quiz">'''
     frm_submit = '''<p><input type="submit" value="Выбрать"> </p>'''
     html_end = '''</select>''' + frm_submit + '''</form></body></html>'''
@@ -43,13 +43,11 @@ def test():
     if not ('quiz' in session) or int(session['quiz']) < 0:
         return redirect(url_for('index'))
     else:
-        # тут пока старая версия функции:
         result = get_question_after(session['last_question'], session['quiz'])
         if result is None or len(result) == 0:
             return redirect(url_for('result'))
         else:
             session['last_question'] = result[0]
-            # если мы научили базу возвращать Row или dict, то надо писать не result[0], а result['id']
             return '<h1>' + str(session['quiz']) + '<br>' + str(result) + '</h1>'
  
 def result():
