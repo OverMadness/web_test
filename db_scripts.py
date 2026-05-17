@@ -21,14 +21,18 @@ def do(query):
 def clear_db():
     ''' убивает все таблицы '''
     open()
-    do('''DROP TABLE IF EXISTS quiz_content''')
-    do('''DROP TABLE IF EXISTS question''')
-    do('''DROP TABLE IF EXISTS quiz''')
+    query = '''DROP TABLE IF EXISTS quiz_content'''
+    do(query)
+    query = '''DROP TABLE IF EXISTS question'''
+    do(query)
+    query = '''DROP TABLE IF EXISTS quiz'''
+    do(query)
     close()
  
 def create():
     open()
-    do('''PRAGMA foreign_keys=on''') 
+    cursor.execute('''PRAGMA foreign_keys=on''')
+    
     do('''CREATE TABLE IF NOT EXISTS quiz (
             id INTEGER PRIMARY KEY, 
             name VARCHAR)''' 
@@ -90,12 +94,15 @@ def add_quiz():
  
 def add_links():
     open()
-    do('''PRAGMA foreign_keys=on''')
-    links = [[1, [1, 2, 3]], [2, [4, 5]], [3, [6, 7]]] # привязываем 1, 2 и 3 вопросы к 1 викторине и т.д. по аналогии
-    for quiz_id_temp, questions_id_temp in links:
-        for question_id_temp in questions_id_temp:
-            cursor.execute('''INSERT INTO quiz_content (quiz_id, question_id) VALUES (?, ?)''', [quiz_id_temp, question_id_temp])
-    
+    cursor.execute('''PRAGMA foreign_keys=on''')
+    query = "INSERT INTO quiz_content (quiz_id, question_id) VALUES (?,?)"
+    answer = input("Добавить связь (y / n)?")
+    while answer != 'n':
+        quiz_id = int(input("id викторины: "))
+        question_id = int(input("id вопроса: "))
+        cursor.execute(query, [quiz_id, question_id])
+        conn.commit()
+        answer = input("Добавить связь (y / n)?")
     close()
  
  
@@ -116,14 +123,34 @@ def get_question_after(last_id=0, vict_id=1):
     return result 
  
 def get_quises():
-    ''' возвращает список викторин (id, name) 
-    можно брать только викторины, в которых есть вопросы, но пока простой вариант '''
+    ''' возвращает список викторин (id, name) '''
     query = 'SELECT * FROM quiz ORDER BY id'
     open()
     cursor.execute(query)
     result = cursor.fetchall()
     close()
-    return result  
+    return result
+ 
+def get_quiz_count():
+    ''' необязательная функция '''
+    query = 'SELECT MAX(quiz_id) FROM quiz_content'
+    open()
+    cursor.execute(query)
+    result = cursor.fetchone()
+    close()
+    return result
+    
+ 
+def get_random_quiz_id():
+    query = 'SELECT quiz_id FROM quiz_content'
+    open()
+    cursor.execute(query)
+    ids = cursor.fetchall()
+    rand_num = randint(0, len(ids) - 1)
+    rand_id = ids[rand_num][0]
+    close()
+    return rand_id
+    
  
 def main():
     clear_db()
@@ -133,6 +160,7 @@ def main():
     show_tables()
     add_links()
     show_tables()
+    pass
     
 if __name__ == "__main__":
     main()
